@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This file is for preparing all the needed files and directories on the host.
 
 SCRIPT_DIR=$(dirname $0)
 OS_NAME=$(uname)
+ENV_FILE=".env"
 
 error_exit () {
     echo; echo "ERROR: $1"; echo
@@ -46,11 +47,13 @@ if [ "${OS_NAME}" = "Linux" ] && [ "$EUID" != 0 ]; then
     error_exit "This script must be run as root or with sudo"
 fi
 
-if [ ! -f ./.env ]; then
-    error_exit ".env file does not exist in $SCRIPT_DIR"
+if [ ! -f "./${ENV_FILE}" ]; then
+    error_exit "${ENV_FILE} file does not exist in $SCRIPT_DIR"
 fi
 
-source ./.env
+set -o allexport
+source ./${ENV_FILE}
+set +Ã+o allexport
 
 # -----
 # Create directory structure for all docker-compose services
@@ -83,7 +86,7 @@ docker-compose stop mongodb  &> /dev/null
 
 set_permissions ${XRAY_MOUNT_ROOT}/xray ${XRAY_USER_ID} ${XRAY_USER_ID}
 set_permissions ${XRAY_MOUNT_ROOT}/artifactory ${ARTIFACTORY_USER_ID} ${ARTIFACTORY_USER_ID}
-set_permissions ${XRAY_MOUNT_ROOT}/mongodb ${XRAY_MONGODB_UID} ${XRAY_MONGODB_UID}
+# set_permissions ${XRAY_MOUNT_ROOT}/mongodb ${XRAY_MONGODB_UID} ${XRAY_MONGODB_UID}
 
 #if [ $(stat -c '%u' ${XRAY_MOUNT_ROOT}/xray) != "${XRAY_USER_ID}" ] || [ $(stat -c '%g' ${XRAY_MOUNT_ROOT}/xray) != "${XRAY_USER_ID}" ]; then
 #    echo "Setting needed ownerships on ${XRAY_MOUNT_ROOT}/xray"
