@@ -23,10 +23,17 @@ if [ ! -d ${XRAY_MOUNT_ROOT}/xray ]; then
     echo "Creating ${XRAY_MOUNT_ROOT}/xray"
     mkdir -p ${XRAY_MOUNT_ROOT}/xray
 fi
+if [ ! -d ${XRAY_MOUNT_ROOT}/artifactory ]; then
+    echo "Creating ${XRAY_MOUNT_ROOT}/artifactory"
+    mkdir -p ${XRAY_MOUNT_ROOT}/artifactory
+fi
 
 if [ $(stat -c '%u' ${XRAY_MOUNT_ROOT}/xray) != "${XRAY_USER_ID}" ] || [ $(stat -c '%g' ${XRAY_MOUNT_ROOT}/xray) != "${XRAY_USER_ID}" ]; then
     echo "Setting needed ownerships on ${XRAY_MOUNT_ROOT}/xray"
     chown -R ${XRAY_USER_ID}:${XRAY_USER_ID} ${XRAY_MOUNT_ROOT}/xray || errorExit "Setting ownership of ${XRAY_MOUNT_ROOT}/xray to ${XRAY_USER_ID} failed"
 fi
-
+if [ $(stat -c '%u' ${XRAY_MOUNT_ROOT}/artifactory) != "${ARTIFACTORY_USER_ID}" ] || [ $(stat -c '%g' ${XRAY_MOUNT_ROOT}/artifactory) != "${ARTIFACTORY_USER_ID}" ]; then
+    echo "Setting needed ownerships on ${XRAY_MOUNT_ROOT}/artifactory"
+    chown -R ${ARTIFACTORY_USER_ID}:${ARTIFACTORY_USER_ID} ${XRAY_MOUNT_ROOT}/artifactory || errorExit "Setting ownership of ${XRAY_MOUNT_ROOT}/artifactory to ${ARTIFACTORY_USER_ID} failed"
+fi
 echo "Done!"

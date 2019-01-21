@@ -6,11 +6,11 @@ version: "3"
 services:
 
 ## ---------------
-  artifactory: ## jfrog
-    image: $XRAY_DOCKER_REPO/artifactory-pro:${ARTIFACTORY_VERSION}
+  artifactory:
+    image: ${XRAY_DOCKER_REPO}/artifactory-pro:${ARTIFACTORY_VERSION}
     container_name: artifactory
     ports:
-     - 8081:8081
+     - ${ARTIFACTORY_SERVER_PORT}:${ARTIFACTORY_SERVER_PORT}
     volumes:
      - ${XRAY_MOUNT_ROOT}/artifactory:/var/opt/jfrog/artifactory
     restart: always
@@ -27,66 +27,66 @@ services:
     
 
   xray-server:
-    image: $XRAY_DOCKER_REPO/xray-server:$XRAY_VERSION
+    image: ${XRAY_DOCKER_REPO}/xray-server:${XRAY_VERSION}
     container_name: xray-server
     ports:
-      - "$XRAY_SERVER_PORT:$XRAY_SERVER_PORT"
+      - ${XRAY_SERVER_PORT}:${XRAY_SERVER_PORT}
     depends_on:
       - mongodb
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:$XRAY_DATA"
+      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
     environment:
-      - "XRAYCONFIGPATH=$XRAY_DATA"
+      - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_SERVER_FLAGS"
     restart: always
 
   xray-indexer:
-    image: $XRAY_DOCKER_REPO/xray-indexer:$XRAY_VERSION
+    image: ${XRAY_DOCKER_REPO}/xray-indexer:${XRAY_VERSION}
     container_name: xray-indexer
     depends_on:
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:$XRAY_DATA"
+      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
     environment:
-      - "XRAYCONFIGPATH=$XRAY_DATA"
+      - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_INDEXER_FLAGS"
     restart: always
 
   xray-analysis:
-    image: $XRAY_DOCKER_REPO/xray-analysis:$XRAY_VERSION
+    image: ${XRAY_DOCKER_REPO}/xray-analysis:${XRAY_VERSION}
     container_name: xray-analysis
     depends_on:
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:$XRAY_DATA"
+      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
     environment:
-      - "XRAYCONFIGPATH=$XRAY_DATA"
+      - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_ANALYSIS_FLAGS"
     restart: always
 
   xray-persist:
-    image: $XRAY_DOCKER_REPO/xray-persist:$XRAY_VERSION
+    image: ${XRAY_DOCKER_REPO}/xray-persist:${XRAY_VERSION}
     container_name: xray-persist
     depends_on:
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:$XRAY_DATA"
+      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
     environment:
-      - "XRAYCONFIGPATH=$XRAY_DATA"
+      - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_PERSIST_FLAGS"
     restart: always
 
   rabbitmq:
-    image: $XRAY_DOCKER_REPO/xray-rabbitmq:$RABBITMQ_VERSION
+    image: ${XRAY_DOCKER_REPO}/xray-rabbitmq:$RABBITMQ_VERSION
     container_name: xray-rabbitmq
     hostname: $DOCKER_SERVER_HOSTNAME
     volumes:
@@ -96,7 +96,7 @@ services:
     restart: always
 
   postgres:
-    image: $XRAY_DOCKER_REPO/xray-postgres:$POSTGRES_VERSION
+    image: ${XRAY_DOCKER_REPO}/xray-postgres:$POSTGRES_VERSION
     container_name: xray-postgres
     environment:
       - "POSTGRES_USER=$POSTGRES_USER"
@@ -107,7 +107,7 @@ services:
     restart: always
 
   mongodb:
-    image: $XRAY_DOCKER_REPO/xray-mongo:$MONGO_VERSION
+    image: ${XRAY_DOCKER_REPO}/xray-mongo:$MONGO_VERSION
     container_name: xray-mongodb
     entrypoint: /bin/bash -c "chmod 777 /data/logs; /entrypoint.sh --logpath /data/logs/xray-mongo.log --auth"
     volumes:
