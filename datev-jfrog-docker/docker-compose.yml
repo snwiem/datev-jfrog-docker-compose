@@ -23,6 +23,17 @@ services:
 #    ports:
 #      - 80:80
 
+  proxy:
+    container_name: reverse-proxy
+    image: nginx:latest
+    volumes:
+      - ./conf/proxy/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - jfrog-network
+  
 ## ---------------
   artifactory:
     image: ${JFROG_DOCKER_REPO}/artifactory-pro:${ARTIFACTORY_VERSION}
