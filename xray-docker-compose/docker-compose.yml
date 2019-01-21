@@ -1,0 +1,203 @@
+version: '3.5'
+services:
+# --------------------------------------------------------------- INFRASTRUCTURE
+## --------------------------------------------------------------- Reverse proxy
+
+  proxy:
+    container_name: datev-proxy-${PROXY_VERSION}
+    image: jwilder/nginx-proxy:${PROXY_VERSION}
+
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ${DOCKER_DATA}/proxy/conf.d/max_body_size.conf:/etc/nginx/conf.d/max_body_size.conf:ro
+      - ${DOCKER_DATA}/proxy/vhost.d:/etc/nginx/vhost.d:ro
+    networks:
+      datev-network:
+        aliases:
+          - ${JENKINS_HOSTNAME}
+          - ${ARTIFACTORY_HOSTNAME}
+          - ${ARTIFACTORY_WILDCARD_HOSTNAME}
+          - ${XRAY_HOSTNAME}
+    ports:
+      - 80:80
+
+# ------------------------------------------------------------------ DEVELOPMENT
+##  -------------------------------------------------------------------- Jenkins
+
+  jenkins:
+    container_name: datev-jenkins-${JENKINS_VERSION}
+    image: jenkins/jenkins:${JENKINS_VERSION}
+
+    volumes:
+      - ${DOCKER_DATA}/jenkins/home:/var/jenkins_home
+    networks:
+      - datev-network
+
+    environment:
+      - VIRTUAL_HOST=${JENKINS_HOSTNAME}
+      - VIRTUAL_PORT=8080
+
+## ----------------------------------------------------------------- Artifactory
+
+  artifactory:
+    container_name: datev-artifactory-${ARTIFACTORY_VERSION}
+    image: docker.bintray.io/jfrog/artifactory-pro:${ARTIFACTORY_VERSION}
+
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 32000
+        hard: 40000
+    volumes:
+      - ${DOCKER_DATA}/artifactory/home:/var/opt/jfrog/artifactory
+    networks:
+      - datev-network
+
+    environment:
+      - VIRTUAL_HOST=${ARTIFACTORY_HOSTNAME},${ARTIFACTORY_WILDCARD_HOSTNAME}
+      - VIRTUAL_PORT=8081
+
+## ------------------------------------------------------------------------ Xray
+
+  xray-server:
+    container_name: datev-xray-server-${XRAY_VERSION}
+    image: docker.bintray.io/jfrog/xray-server:${XRAY_VERSION}
+    depends_on:
+      - xray-mongodb
+      - xray-postgres
+      - xray-rabbitmq
+      - xray-analysis
+      - xray-indexer
+      - xray-persist
+
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
+    volumes:
+     - ${DOCKER_DATA}/xray/home:/var/opt/jfrog/xray/data
+    networks:
+      - datev-network
+
+    environment:
+      - VIRTUAL_HOST=${XRAY_HOSTNAME}
+      - VIRTUAL_PORT=8000
+      - XRAYCONFIGPATH=/var/opt/jfrog/xray/data
+
+  xray-indexer:
+    container_name: datev-xray-indexer-${XRAY_VERSION}
+    image: docker.bintray.io/jfrog/xray-indexer:${XRAY_VERSION}
+    depends_on:
+      - xray-postgres
+      - xray-rabbitmq
+
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
+    volumes:
+     - ${DOCKER_DATA}/xray/home:/var/opt/jfrog/xray/data
+    networks:
+      - datev-network
+
+    environment:
+     - XRAYCONFIGPATH=/var/opt/jfrog/xray/data
+
+  xray-analysis:
+    container_name: datev-xray-analysis-${XRAY_VERSION}
+    image: docker.bintray.io/jfrog/xray-analysis:${XRAY_VERSION}
+    depends_on:
+      - xray-postgres
+      - xray-rabbitmq
+
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
+    volumes:
+     - ${DOCKER_DATA}/xray/home:/var/opt/jfrog/xray/data
+    networks:
+      - datev-network
+
+    environment:
+     - XRAYCONFIGPATH=/var/opt/jfrog/xray/data
+
+  xray-persist:
+    container_name: datev-xray-persist-${XRAY_VERSION}
+    image: docker.bintray.io/jfrog/xray-persist:${XRAY_VERSION}
+    depends_on:
+      - xray-postgres
+      - xray-rabbitmq
+
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
+    volumes:
+     - ${DOCKER_DATA}/xray/home:/var/opt/jfrog/xray/data
+    networks:
+      - datev-network
+
+    environment:
+     - XRAYCONFIGPATH=/var/opt/jfrog/xray/data
+
+  xray-rabbitmq:
+    container_name: datev-xray-rabbitmq-${XRAY_RABBITMQ_VERSION}
+    image: docker.bintray.io/jfrog/xray-rabbitmq:${XRAY_RABBITMQ_VERSION}
+
+    volumes:
+     - ${DOCKER_DATA}/xray/rabbitmq:/var/lib/rabbitmq
+    networks:
+      datev-network:
+        aliases:
+          - ${XRAY_RABBITMQ_HOSTNAME}
+
+    environment:
+     - VIRTUAL_HOST=${XRAY_RABBITMQ_HOSTNAME}
+     - VIRTUAL_PORT=15672
+     - RABBITMQ_ERLANG_COOKIE=xray-erlang-cookie
+
+  xray-postgres:
+    container_name: datev-xray-postgres-${XRAY_POSTGRES_VERSION}
+    image: docker.bintray.io/jfrog/xray-postgres:${XRAY_POSTGRES_VERSION}
+
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
+    volumes:
+     - ${DOCKER_DATA}/xray/postgres:/var/lib/postgresql/data
+    networks:
+      datev-network:
+        aliases:
+          - ${XRAY_POSTGRES_HOSTNAME}
+
+    environment:
+     - POSTGRES_USER=xray
+     - POSTGRES_PASSWORD=xray
+     - POSTGRES_DB=xray
+
+  xray-mongodb:
+    container_name: datev-xray-mongodb-${XRAY_MONGODB_VERSION}
+    image: docker.bintray.io/jfrog/xray-mongo:${XRAY_MONGODB_VERSION}
+
+    entrypoint: /bin/bash -c "chmod 777 /data/logs; /entrypoint.sh --logpath /data/logs/xray-mongo.log --auth"
+
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
+    volumes:
+     - ${DOCKER_DATA}/xray/mongodb/configdb:/data/configdb
+     - ${DOCKER_DATA}/xray/mongodb/db:/data/db
+     - ${DOCKER_DATA}/xray/mongodb/logs:/data/logs
+    networks:
+      datev-network:
+        aliases:
+          - ${XRAY_MONGODB_HOSTNAME}
+
+## ------------------------------------------------------------ Docker networks
+
+networks:
+  datev-network:
+    name: datev-network

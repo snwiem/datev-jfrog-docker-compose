@@ -1,0 +1,8 @@
+---
+    ver:                  1.0
+    XrayServerPort:       8000
+    mqBaseUrl:            amqp://guest:guest@${XRAY_RABBITMQ_HOSTNAME}:5672
+    mongoUrl:             mongodb://xray:password@${XRAY_MONGODB_HOSTNAME}:27017/?authSource=xray&authMechanism=SCRAM-SHA-1
+    postgresqlUrl:        postgres://xray:xray@${XRAY_POSTGRES_HOSTNAME}:5432/xray?sslmode=disable
+
+    indexAllBuilds: true
