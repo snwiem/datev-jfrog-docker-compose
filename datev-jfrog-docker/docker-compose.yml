@@ -6,7 +6,7 @@ version: "3"
 services:
 
   proxy:
-    container_name: datev-proxy-${NGINX_VERSION}
+    container_name: reverse-proxy
     image: jwilder/nginx-proxy:${NGINX_VERSION}
 
     volumes:
@@ -61,7 +61,7 @@ services:
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_SERVER_FLAGS"
     restart: always
     networks:
-      - datev-network
+      - jfrog-network
 
   xray-indexer:
     image: ${JFROG_DOCKER_REPO}/xray-indexer:${XRAY_VERSION}
@@ -77,7 +77,7 @@ services:
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_INDEXER_FLAGS"
     restart: always
     networks:
-       - datev-network
+       - jfrog-network
 
   xray-analysis:
     image: ${JFROG_DOCKER_REPO}/xray-analysis:${XRAY_VERSION}
@@ -93,7 +93,7 @@ services:
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_ANALYSIS_FLAGS"
     restart: always
     networks:
-      - datev-network
+      - jfrog-network
 
   xray-persist:
     image: ${JFROG_DOCKER_REPO}/xray-persist:${XRAY_VERSION}
