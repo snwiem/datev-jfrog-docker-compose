@@ -11,7 +11,7 @@ services:
     ports:
      - ${ARTIFACTORY_SERVER_PORT}:${ARTIFACTORY_SERVER_PORT}
     volumes:
-     - ${XRAY_MOUNT_ROOT}/artifactory:/var/opt/jfrog/artifactory
+     - ${DOCKER_DATA}/artifactory:/var/opt/jfrog/artifactory
     restart: always
     ulimits:
       nproc: 65535
@@ -32,7 +32,7 @@ services:
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
+      - "$DOCKER_DATA/xray:/var/opt/jfrog/xray/data"
     environment:
       - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
@@ -48,7 +48,7 @@ services:
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
+      - "$DOCKER_DATA/xray:/var/opt/jfrog/xray/data"
     environment:
       - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
@@ -64,7 +64,7 @@ services:
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
+      - "$DOCKER_DATA/xray:/var/opt/jfrog/xray/data"
     environment:
       - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
@@ -80,7 +80,7 @@ services:
       - postgres
       - rabbitmq
     volumes:
-      - "$XRAY_MOUNT_ROOT/xray:/var/opt/jfrog/xray/data"
+      - "$DOCKER_DATA/xray:/var/opt/jfrog/xray/data"
     environment:
       - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
@@ -96,7 +96,7 @@ services:
     ports:
       - 15672:15672
     volumes:
-      - "$XRAY_MOUNT_ROOT/rabbitmq:/var/lib/rabbitmq"
+      - "$DOCKER_DATA/rabbitmq:/var/lib/rabbitmq"
     environment:
       - "RABBITMQ_ERLANG_COOKIE=$RABBITMQ_ERLANG_COOKIE"
     restart: always
@@ -113,7 +113,7 @@ services:
       - "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
       - "POSTGRES_DB=$POSTGRES_DB"
     volumes:
-      - "$XRAY_MOUNT_ROOT/postgres:/var/lib/postgresql/data"
+      - "$DOCKER_DATA/postgres:/var/lib/postgresql/data"
     restart: always
     networks:
       jfrog-network:
@@ -125,9 +125,9 @@ services:
     container_name: xray-mongodb
     entrypoint: /bin/bash -c "chmod 777 /data/logs; /entrypoint.sh --logpath /data/logs/xray-mongo.log --auth"
     volumes:
-      - "$XRAY_MOUNT_ROOT/mongodb/logs:/data/logs"
-      - "$XRAY_MOUNT_ROOT/mongodb/configdb:/data/configdb"
-      - "$XRAY_MOUNT_ROOT/mongodb/db:/data/db"
+      - "$DOCKER_DATA/mongodb/logs:/data/logs"
+      - "$DOCKER_DATA/mongodb/configdb:/data/configdb"
+      - "$DOCKER_DATA/mongodb/db:/data/db"
     restart: always
     networks:
       jfrog-network:
