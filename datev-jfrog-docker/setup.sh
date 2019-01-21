@@ -58,8 +58,6 @@ set +o allexport
 # -----
 # Create directory structure for all docker-compose services
 # -----
-create_directory "${XRAY_MOUNT_ROOT}/proxy/conf.d"
-create_directory "${XRAY_MOUNT_ROOT}/proxy/vhost.d"
 create_directory "${XRAY_MOUNT_ROOT}/xray"
 create_directory "${XRAY_MOUNT_ROOT}/artifactory"
 create_directory "${XRAY_MOUNT_ROOT}/postgres"
@@ -67,11 +65,6 @@ create_directory "${XRAY_MOUNT_ROOT}/mongodb/configdb"
 create_directory "${XRAY_MOUNT_ROOT}/mongodb/db"
 create_directory "${XRAY_MOUNT_ROOT}/mongodb/logs"
 create_directory "${XRAY_MOUNT_ROOT}/rabbitmq"
-
-echo -n "[Info] NGINX proxy: Copying bootstrap configuration..."
-cp -r conf/proxy/* ${XRAY_MOUNT_ROOT}/proxy \
-    && mv ${XRAY_MOUNT_ROOT}/proxy/vhost.d/artifactory.vhost.tmpl ${XRAY_MOUNT_ROOT}/proxy/vhost.d/${ARTIFACTORY_HOSTNAME}
-[ $? -eq 0 ] && echo "[OK]" || echo "[ERROR]"
 
 echo -n "[Info] Xray: Copying bootstrap configuration..."
 cp -r conf/xray/* ${XRAY_MOUNT_ROOT}/xray \
@@ -86,16 +79,3 @@ docker-compose stop mongodb  &> /dev/null
 
 set_permissions ${XRAY_MOUNT_ROOT}/xray ${XRAY_USER_ID} ${XRAY_USER_ID}
 set_permissions ${XRAY_MOUNT_ROOT}/artifactory ${ARTIFACTORY_USER_ID} ${ARTIFACTORY_USER_ID}
-# set_permissions ${XRAY_MOUNT_ROOT}/mongodb ${XRAY_MONGODB_UID} ${XRAY_MONGODB_UID}
-
-#if [ $(stat -c '%u' ${XRAY_MOUNT_ROOT}/xray) != "${XRAY_USER_ID}" ] || [ $(stat -c '%g' ${XRAY_MOUNT_ROOT}/xray) != "${XRAY_USER_ID}" ]; then
-#    echo "Setting needed ownerships on ${XRAY_MOUNT_ROOT}/xray"
-#    chown -R ${XRAY_USER_ID}:${XRAY_USER_ID} ${XRAY_MOUNT_ROOT}/xray || error_exit "Setting ownership of ${XRAY_MOUNT_ROOT}/xray to ${XRAY_USER_ID} failed"
-#fi
-#if [ $(stat -c '%u' ${XRAY_MOUNT_ROOT}/artifactory) != "${ARTIFACTORY_USER_ID}" ] || [ $(stat -c '%g' ${XRAY_MOUNT_ROOT}/artifactory) != "${ARTIFACTORY_USER_ID}" ]; then
-#    echo "Setting needed ownerships on ${XRAY_MOUNT_ROOT}/artifactory"
-#    chown -R ${ARTIFACTORY_USER_ID}:${ARTIFACTORY_USER_ID} ${XRAY_MOUNT_ROOT}/artifactory || error_exit "Setting ownership of ${XRAY_MOUNT_ROOT}/artifactory to ${ARTIFACTORY_USER_ID} failed"
-#fi
-
-
-
