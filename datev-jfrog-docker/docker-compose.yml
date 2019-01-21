@@ -39,9 +39,9 @@ services:
         hard: 40000
     networks:
       - jfrog-network
-    environment:
-      - VIRTUAL_HOST=${ARTIFACTORY_HOSTNAME},${ARTIFACTORY_WILDCARD_HOSTNAME}
-      - VIRTUAL_PORT=${ARTIFACTORY_SERVER_PORT}
+#    environment:
+#      - VIRTUAL_HOST=${ARTIFACTORY_HOSTNAME},${ARTIFACTORY_WILDCARD_HOSTNAME}
+#      - VIRTUAL_PORT=${ARTIFACTORY_SERVER_PORT}
     
 
   xray-server:
@@ -59,8 +59,8 @@ services:
       - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_SERVER_FLAGS"
-      - VIRTUAL_HOST=${XRAY_HOSTNAME}
-      - VIRTUAL_PORT=${XRAY_SERVER_PORT}
+#      - VIRTUAL_HOST=${XRAY_HOSTNAME}
+#      - VIRTUAL_PORT=${XRAY_SERVER_PORT}
     restart: always
     networks:
       - jfrog-network
@@ -123,8 +123,8 @@ services:
       - "$XRAY_MOUNT_ROOT/rabbitmq:/var/lib/rabbitmq"
     environment:
       - "RABBITMQ_ERLANG_COOKIE=$RABBITMQ_ERLANG_COOKIE"
-      - VIRTUAL_HOST=${XRAY_RABBITMQ_HOSTNAME}
-      - VIRTUAL_PORT=15672
+#      - VIRTUAL_HOST=${XRAY_RABBITMQ_HOSTNAME}
+#      - VIRTUAL_PORT=15672
     restart: always
     networks:
       jfrog-network:
