@@ -5,23 +5,23 @@ version: "3.5"
 ## -------------------------------------------
 services:
 
-  proxy:
-    container_name: reverse-proxy
-    image: jwilder/nginx-proxy:${NGINX_VERSION}
-
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ${XRAY_MOUNT_ROOT}/proxy/conf.d/max_body_size.conf:/etc/nginx/conf.d/max_body_size.conf:ro
-      - ${XRAY_MOUNT_ROOT}/proxy/vhost.d:/etc/nginx/vhost.d:ro
-    networks:
-      jfrog-network:
-        aliases:
-          - ${JENKINS_HOSTNAME}
-          - ${ARTIFACTORY_HOSTNAME}
-          - ${ARTIFACTORY_WILDCARD_HOSTNAME}
-          - ${XRAY_HOSTNAME}
-    ports:
-      - 80:80
+#  proxy:
+#    container_name: reverse-proxy
+#    image: jwilder/nginx-proxy:${NGINX_VERSION}
+#
+#    volumes:
+#      - /var/run/docker.sock:/tmp/docker.sock:ro
+#      - ${XRAY_MOUNT_ROOT}/proxy/conf.d/max_body_size.conf:/etc/nginx/conf.d/max_body_size.conf:ro
+#      - ${XRAY_MOUNT_ROOT}/proxy/vhost.d:/etc/nginx/vhost.d:ro
+#    networks:
+#      jfrog-network:
+#        aliases:
+#          - ${JENKINS_HOSTNAME}
+#          - ${ARTIFACTORY_HOSTNAME}
+#          - ${ARTIFACTORY_WILDCARD_HOSTNAME}
+#          - ${XRAY_HOSTNAME}
+#    ports:
+#      - 80:80
 
 ## ---------------
   artifactory:
