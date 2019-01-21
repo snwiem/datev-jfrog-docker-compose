@@ -1,5 +1,8 @@
 version: "3"
-
+## -------------------------------------------
+## DATEV Specific docker compose configuration
+## for JFrog services
+## -------------------------------------------
 services:
   xray-server:
     image: $XRAY_DOCKER_REPO/xray-server:$XRAY_VERSION
@@ -61,7 +64,7 @@ services:
     restart: always
 
   rabbitmq:
-    image: $XRAYDB_DOCKER_REPO/xray-rabbitmq:$RABBITMQ_VERSION
+    image: $XRAY_DOCKER_REPO/xray-rabbitmq:$RABBITMQ_VERSION
     container_name: xray-rabbitmq
     hostname: $DOCKER_SERVER_HOSTNAME
     volumes:
@@ -71,7 +74,7 @@ services:
     restart: always
 
   postgres:
-    image: $XRAYDB_DOCKER_REPO/xray-postgres:$POSTGRES_VERSION
+    image: $XRAY_DOCKER_REPO/xray-postgres:$POSTGRES_VERSION
     container_name: xray-postgres
     environment:
       - "POSTGRES_USER=$POSTGRES_USER"
@@ -82,7 +85,7 @@ services:
     restart: always
 
   mongodb:
-    image: $XRAYDB_DOCKER_REPO/xray-mongo:$MONGO_VERSION
+    image: $XRAY_DOCKER_REPO/xray-mongo:$MONGO_VERSION
     container_name: xray-mongodb
     entrypoint: /bin/bash -c "chmod 777 /data/logs; /entrypoint.sh --logpath /data/logs/xray-mongo.log --auth"
     volumes:
