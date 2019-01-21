@@ -53,7 +53,7 @@ fi
 
 set -o allexport
 source ./${ENV_FILE}
-set +Ã+o allexport
+set +o allexport
 
 # -----
 # Create directory structure for all docker-compose services

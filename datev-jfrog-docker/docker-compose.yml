@@ -41,7 +41,7 @@ services:
       - jfrog-network
     environment:
       - VIRTUAL_HOST=${ARTIFACTORY_HOSTNAME},${ARTIFACTORY_WILDCARD_HOSTNAME}
-      - VIRTUAL_PORT=8081
+      - VIRTUAL_PORT=${ARTIFACTORY_SERVER_PORT}
     
 
   xray-server:
@@ -59,6 +59,8 @@ services:
       - "XRAYCONFIGPATH=/var/opt/jfrog/xray/data"
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_SERVER_FLAGS"
+      - VIRTUAL_HOST=${XRAY_HOSTNAME}
+      - VIRTUAL_PORT=${XRAY_SERVER_PORT}
     restart: always
     networks:
       - jfrog-network
@@ -115,6 +117,8 @@ services:
     image: ${JFROG_DOCKER_REPO}/xray-rabbitmq:$RABBITMQ_VERSION
     container_name: xray-rabbitmq
     #hostname: $DOCKER_SERVER_HOSTNAME
+    ports:
+      - 15672:15672
     volumes:
       - "$XRAY_MOUNT_ROOT/rabbitmq:/var/lib/rabbitmq"
     environment:
