@@ -5,6 +5,24 @@ version: "3"
 ## -------------------------------------------
 services:
 
+  proxy:
+    container_name: datev-proxy-${NGINX_VERSION}
+    image: jwilder/nginx-proxy:${NGINX_VERSION}
+
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ${XRAY_MOUNT_ROOT}/proxy/conf.d/max_body_size.conf:/etc/nginx/conf.d/max_body_size.conf:ro
+      - ${XRAY_MOUNT_ROOT}/proxy/vhost.d:/etc/nginx/vhost.d:ro
+    networks:
+      jfrog-network:
+        aliases:
+          - ${JENKINS_HOSTNAME}
+          - ${ARTIFACTORY_HOSTNAME}
+          - ${ARTIFACTORY_WILDCARD_HOSTNAME}
+          - ${XRAY_HOSTNAME}
+    ports:
+      - 80:80
+
 ## ---------------
   artifactory:
     image: ${JFROG_DOCKER_REPO}/artifactory-pro:${ARTIFACTORY_VERSION}
@@ -19,11 +37,11 @@ services:
       nofile:
         soft: 32000
         hard: 40000
-    #networks:
-    #  - jfrog-network
-    #environment:
-    #  - VIRTUAL_HOST=${ARTIFACTORY_HOSTNAME},${ARTIFACTORY_WILDCARD_HOSTNAME}
-    #  - VIRTUAL_PORT=8081
+    networks:
+      - jfrog-network
+    environment:
+      - VIRTUAL_HOST=${ARTIFACTORY_HOSTNAME},${ARTIFACTORY_WILDCARD_HOSTNAME}
+      - VIRTUAL_PORT=8081
     
 
   xray-server:
@@ -42,8 +60,8 @@ services:
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_SERVER_FLAGS"
     restart: always
-  # networks:
-  #    - datev-network
+    networks:
+      - datev-network
 
   xray-indexer:
     image: ${JFROG_DOCKER_REPO}/xray-indexer:${XRAY_VERSION}
@@ -58,8 +76,8 @@ services:
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_INDEXER_FLAGS"
     restart: always
-#   networks:
-#       - datev-network
+    networks:
+       - datev-network
 
   xray-analysis:
     image: ${JFROG_DOCKER_REPO}/xray-analysis:${XRAY_VERSION}
@@ -74,8 +92,8 @@ services:
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_ANALYSIS_FLAGS"
     restart: always
-#   networks:
-#      - datev-network
+    networks:
+      - datev-network
 
   xray-persist:
     image: ${JFROG_DOCKER_REPO}/xray-persist:${XRAY_VERSION}
@@ -90,22 +108,24 @@ services:
       - "DOCKER_COMPOSE_FLAGS=$DOCKER_COMPOSE_FLAGS"
       - "DOCKER_COMPOSE_XRAY_FLAGS=$DOCKER_COMPOSE_XRAY_PERSIST_FLAGS"
     restart: always
-#    networks:
-#      - jfrog-network
+    networks:
+      - jfrog-network
 
   rabbitmq:
     image: ${JFROG_DOCKER_REPO}/xray-rabbitmq:$RABBITMQ_VERSION
     container_name: xray-rabbitmq
-    hostname: $DOCKER_SERVER_HOSTNAME
+    #hostname: $DOCKER_SERVER_HOSTNAME
     volumes:
       - "$XRAY_MOUNT_ROOT/rabbitmq:/var/lib/rabbitmq"
     environment:
       - "RABBITMQ_ERLANG_COOKIE=$RABBITMQ_ERLANG_COOKIE"
+      - VIRTUAL_HOST=${XRAY_RABBITMQ_HOSTNAME}
+      - VIRTUAL_PORT=15672
     restart: always
-#    networks:
-#      jfrog-network:
-#        aliases:
-#          - ${XRAY_RABBITMQ_HOSTNAME}
+    networks:
+      jfrog-network:
+        aliases:
+          - ${XRAY_RABBITMQ_HOSTNAME}
 
   postgres:
     image: ${JFROG_DOCKER_REPO}/xray-postgres:$POSTGRES_VERSION
@@ -117,10 +137,10 @@ services:
     volumes:
       - "$XRAY_MOUNT_ROOT/postgres:/var/lib/postgresql/data"
     restart: always
-#    networks:
-#      jfrog-network:
-#        aliases:
-#          - ${XRAY_POSTGRES_HOSTNAME}
+    networks:
+      jfrog-network:
+        aliases:
+          - ${XRAY_POSTGRES_HOSTNAME}
 
   mongodb:
     image: ${JFROG_DOCKER_REPO}/xray-mongo:$MONGO_VERSION
@@ -130,14 +150,14 @@ services:
       - "$XRAY_MOUNT_ROOT/mongodb/logs:/data/logs"
       - "$XRAY_MOUNT_ROOT/mongodb/configdb:/data/configdb"
       - "$XRAY_MOUNT_ROOT/mongodb/db:/data/db"
-#    restart: always
-#    networks:
-#      jfrog-network:
-#        aliases:
-#          - ${XRAY_MONGODB_HOSTNAME}
+    restart: always
+    networks:
+      jfrog-network:
+        aliases:
+          - ${XRAY_MONGODB_HOSTNAME}
 
 ## ------------------------------------------------------------ Docker networks
 
-#networks:
-#  datev-network:
-#    name: jfrog-network
+networks:
+  jfrog-network:
+    name: jfrog-network
